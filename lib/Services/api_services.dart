@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:chatgpt_app/Models/chat_modal.dart';
 import 'package:chatgpt_app/Models/modals_models.dart';
+import 'package:chatgpt_app/Widgets/tts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:chatgpt_app/Constants/api_constants.dart';
@@ -46,7 +47,7 @@ class ApIService {
             {
               "model": modelId,
               "messages": [
-                {"role": "user", "content": message },
+                {"role": "user", "content": message},
               ]
             }),
       );
@@ -58,7 +59,8 @@ class ApIService {
       List<ChatModal> chatList = [];
       if (jsonResponse["choices"].length > 0) {
         // print(
-        //     "jsonResponse[choices][text] ${jsonResponse["choices"][0]["text"]}");
+        //     "jsonResponse[choices][text] ${jsonResponse["choices"][0]["text"]}");'
+        var i = 0;
         chatList = List.generate(
           jsonResponse["choices"].length,
           (index) => ChatModal(
@@ -66,6 +68,11 @@ class ApIService {
             chatIndex: 1,
           ),
         );
+        Future.delayed(Duration(microseconds: 50), () {
+          TextToSpeech.speak(
+            jsonResponse["choices"][i]["message"]["content"],
+          );
+        });
       }
       return chatList;
     } catch (error) {

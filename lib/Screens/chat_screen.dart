@@ -1,3 +1,4 @@
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:chatgpt_app/Constants/theme_color.dart';
 import 'package:chatgpt_app/Providers/chat_provider.dart';
 import 'package:chatgpt_app/Providers/modals_provider.dart';
@@ -8,6 +9,7 @@ import 'package:chatgpt_app/Widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -20,6 +22,8 @@ class _ChatScreenState extends State<ChatScreen> {
   late TextEditingController textEditingController;
   late FocusNode focusNode;
   late ScrollController listScrollController;
+  var isListening = false;
+  SpeechToText speechToText = SpeechToText();
 
   @override
   void initState() {
@@ -92,6 +96,46 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
             const SizedBox(
               height: 15,
+            ),
+            AvatarGlow(
+              endRadius: 30.0,
+              animate: isListening,
+              duration: Duration(milliseconds: 2000),
+              glowColor: Colors.white,
+              repeat: true,
+              repeatPauseDuration: Duration(milliseconds: 100),
+              showTwoGlows: true,
+              child: GestureDetector(
+                onTapDown: (details) async {
+                  if (!isListening) {
+                    var avaliable = await speechToText.initialize();
+                    if (avaliable) {
+                      setState(() {
+                        isListening = true;
+                        speechToText.listen(onResult: (result) {
+                          setState(() {
+                            textEditingController.text = result.recognizedWords;
+                          });
+                        });
+                      });
+                    }
+                  }
+                },
+                onTapUp: (dtails) {
+                  setState(() {
+                    isListening = false;
+                  });
+                  speechToText.stop();
+                },
+                child: CircleAvatar(
+                  radius: 15,
+                  backgroundColor: scaffoldBackgroundColor,
+                  child: Icon(
+                    isListening ? Icons.mic : Icons.mic_none,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
             Material(
               color: cardColor,

@@ -1,3 +1,4 @@
+
 class ChatModal {
   final String msg;
   final int chatIndex;
